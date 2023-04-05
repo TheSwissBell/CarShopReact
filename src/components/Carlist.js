@@ -4,6 +4,7 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
 
+import DeleteCarRenderer from './DeleteCarRenderer';
 
 
 export default function Carlist() {
@@ -27,7 +28,8 @@ export default function Carlist() {
         { field: 'fuel', sortable: true },
         { field: 'year', sortable: true },
         { field: 'price', sortable: true },
-        { field: '_links.self.href', sortable: true },
+        { field: '_links.self.href', headerName: 'Delete' , sortable: true },
+        { field: 'total', minWidth: 175, cellRenderer: DeleteCarRenderer },
 
     ])
 
