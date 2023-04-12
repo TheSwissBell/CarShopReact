@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
+import Button from '@mui/material/Button';
 
-import DeleteCarRenderer from './DeleteCarRenderer';
 
 
 export default function Carlist() {
@@ -20,18 +20,44 @@ export default function Carlist() {
 
     const gridRef = useRef();
 
+    const deleteButtonRender = value => {
+        const cellValue = value;
+        return (
+            <>
+                <Button
+                    size='small'
+                    color='error'
+                    onClick={() => deleteCar(value)}
+                >
+                    Delete
+                </Button>
+            </>
+
+        )
+    }
+
+    const deleteCar = (value) => {
+        alert(`Car ${value} deleted!!`);
+        fetch(value.data._links.car.href, { method: 'DELETE' })
+            .then(res => fetchData())
+            .catch(err => console.error(err))
+    }
+
     // Grid
     const [columnDefs] = useState([  // We don't to update it so no need for setColumnDefs
-        { field: 'brand', sortable: true, filter: true, floatingFilter: true },
-        { field: 'model', sortable: true },
-        { field: 'color', sortable: true },
-        { field: 'fuel', sortable: true },
-        { field: 'year', sortable: true },
-        { field: 'price', sortable: true },
-        { field: '_links.self.href', headerName: 'Delete' , sortable: true },
-        { field: 'total', minWidth: 175, cellRenderer: DeleteCarRenderer },
+        { field: 'brand' },
+        { field: 'model' },
+        { field: 'color' },
+        { field: 'fuel' },
+        { field: 'year' },
+        { field: 'price' },
+        { field: '_links.self.href', headerName: 'Delete', cellRenderer: deleteButtonRender },
 
-    ])
+    ]);
+    const defaultColDef = useMemo(() => ({
+        sortable: true,
+        filter: true
+    }))
 
     return (
         <div>
@@ -42,6 +68,7 @@ export default function Carlist() {
                     rowSelection="single"
                     rowData={cars}
                     columnDefs={columnDefs}
+                    defaultColDef={defaultColDef}
                     animateRows={true}
                 >
                 </AgGridReact>
