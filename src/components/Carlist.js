@@ -4,11 +4,12 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
 import Button from '@mui/material/Button';
-
+import Snackbar from '@mui/material/Snackbar';
 
 
 export default function Carlist() {
     const [cars, setCars] = useState([]);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => fetchData(), [])
 
@@ -21,7 +22,6 @@ export default function Carlist() {
     const gridRef = useRef();
 
     const deleteButtonRender = value => {
-        const cellValue = value;
         return (
             <>
                 <Button
@@ -37,26 +37,38 @@ export default function Carlist() {
     }
 
     const deleteCar = (value) => {
-        alert(`Car ${value} deleted!!`);
-        fetch(value.data._links.car.href, { method: 'DELETE' })
-            .then(res => fetchData())
-            .catch(err => console.error(err))
-    }
+        if (window.confirm(`Are you sure you want to delete this car (${value.data.brand} ${value.data.model}) ?`)) {
+            alert(`${value.data.brand} ${value.data.model} deleted!!`);
+            fetch(value.data._links.car.href, { method: 'DELETE' })
+                .then(res => {
+                    if (res.ok) {
+                        setOpen(true);
+                        fetchData();
+                    }
+                    else {
+                        alert('Something went wrong in DELETE request');
+                    };
+                }).catch(err => console.error(err))
+        }
+    };
+
 
     // Grid
     const [columnDefs] = useState([  // We don't to update it so no need for setColumnDefs
-        { field: 'brand' },
-        { field: 'model' },
+        { field: 'brand', width: 160 },
+        { field: 'model', width: 130 },
         { field: 'color' },
         { field: 'fuel' },
         { field: 'year' },
         { field: 'price' },
-        { field: '_links.self.href', headerName: 'Delete', cellRenderer: deleteButtonRender },
+        { field: '_links.self.href', headerName: 'Delete', cellRenderer: deleteButtonRender, sortable: false, filter: false, width: 120 },
 
     ]);
     const defaultColDef = useMemo(() => ({
         sortable: true,
-        filter: true
+        filter: true,
+        width: 100,
+        cellClass: 'ag-left-aligned-cell'
     }))
 
     return (
@@ -73,6 +85,12 @@ export default function Carlist() {
                 >
                 </AgGridReact>
             </div>
+            <Snackbar
+                open={open}
+                message="Car deleted successfully"
+                autoHideDuration={3000}
+                onClose={() => setOpen(false)}
+            />
         </div>
     );
 }
